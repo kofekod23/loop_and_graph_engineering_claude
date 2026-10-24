@@ -80,38 +80,57 @@ If nothing can be detected, the skill asks for the command once, then remembers 
 
 ## Installation
 
-Global install (all your projects):
+Clone the repository and run the install script. It copies the skill and the four commands.
+
+For all your projects (into `~/.claude`):
 
 ```bash
 git clone https://github.com/kofekod23/claude-code-graph-engineering.git
-mkdir -p ~/.claude/skills/graph-engineering
-cp claude-code-graph-engineering/graph-engineering/SKILL.md ~/.claude/skills/graph-engineering/
+cd claude-code-graph-engineering
+./install.sh
 ```
 
-Per-project install (versioned in the repository):
+For a single project (into the current folder's `.claude`, versioned with it):
 
 ```bash
-mkdir -p .claude/skills/graph-engineering
-cp claude-code-graph-engineering/graph-engineering/SKILL.md .claude/skills/graph-engineering/
+cd my-project
+/path/to/claude-code-graph-engineering/install.sh --projet
 ```
 
-Add `.graph/plan.md` to your `.gitignore` (temporary state) and commit `.graph/memoire.md`.
+Restart Claude Code (or open a new session) so it loads the commands. To update: `git pull`, then run the script again.
+
+Manual install, without the script:
+
+```bash
+mkdir -p ~/.claude/skills/graph-engineering ~/.claude/commands
+cp graph-engineering/SKILL.md ~/.claude/skills/graph-engineering/
+cp commands/*.md ~/.claude/commands/
+```
+
+On claude.ai, upload only `graph-engineering/SKILL.md` to your skills. The `/graph...` commands do not exist there, but a message starting with "graphloop" triggers the skill.
+
+In each project, add `.graph/plan.md` to your `.gitignore` (temporary state) and commit `.graph/memoire.md`.
 
 ## Usage
 
-In Claude Code:
+| Command | Effect |
+|---|---|
+| `/graphloop <task>` | Full run: graph, approval if needed, execution, wrap-up |
+| `/graphplan <task>` | Builds and shows the graph without running anything |
+| `/graphstatus` | Shows the state of nodes and loops (read only) |
+| `/graphresume [instruction]` | Resumes where the graph stopped |
+
+Examples:
 
 ```
-/graph-engineering add pagination to the orders API
+/graphloop add pagination to the orders API
+/graphplan refactor the authentication module and cover it with tests
+/graphresume
 ```
 
-or in plain language:
+Without the commands, a message starting with "graphloop" or mentioning "graph mode" also triggers the skill.
 
-```
-Graph mode: refactor the authentication module and cover it with tests
-```
-
-The skill proposes the graph, waits for your approval if needed, then runs it and ends with: the final state of each node, what was delivered, the lines added to memory, and one useful next step.
+The skill ends with the final state of each node, what was delivered, the lines added to memory, and one useful next step.
 
 ## Git
 

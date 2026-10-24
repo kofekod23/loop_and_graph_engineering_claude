@@ -80,38 +80,57 @@ Si rien n'est détectable, la skill demande la commande une fois, puis la mémor
 
 ## Installation
 
-Installation globale (tous vos projets) :
+Clonez le dépôt puis lancez le script d'installation. Il copie la skill et les quatre commandes.
+
+Pour tous vos projets (dans `~/.claude`) :
 
 ```bash
 git clone https://github.com/kofekod23/claude-code-graph-engineering.git
-mkdir -p ~/.claude/skills/graph-engineering
-cp claude-code-graph-engineering/graph-engineering/SKILL.md ~/.claude/skills/graph-engineering/
+cd claude-code-graph-engineering
+./install.sh
 ```
 
-Installation par projet (versionnée dans le dépôt) :
+Pour un seul projet (dans le `.claude` du dossier courant, versionné avec lui) :
 
 ```bash
-mkdir -p .claude/skills/graph-engineering
-cp claude-code-graph-engineering/graph-engineering/SKILL.md .claude/skills/graph-engineering/
+cd mon-projet
+/chemin/vers/claude-code-graph-engineering/install.sh --projet
 ```
 
-Ajoutez `.graph/plan.md` à votre `.gitignore` (état temporaire) et versionnez `.graph/memoire.md`.
+Redémarrez Claude Code (ou ouvrez une nouvelle session) pour qu'il charge les commandes. Pour mettre à jour : `git pull`, puis relancez le script.
+
+Installation manuelle, sans script :
+
+```bash
+mkdir -p ~/.claude/skills/graph-engineering ~/.claude/commands
+cp graph-engineering/SKILL.md ~/.claude/skills/graph-engineering/
+cp commands/*.md ~/.claude/commands/
+```
+
+Sur claude.ai, téléversez seulement `graph-engineering/SKILL.md` dans vos skills. Les commandes `/graph...` n'y existent pas, mais un message qui commence par « graphloop » déclenche la skill.
+
+Dans chaque projet, ajoutez `.graph/plan.md` à votre `.gitignore` (état temporaire) et versionnez `.graph/memoire.md`.
 
 ## Utilisation
 
-Dans Claude Code :
+| Commande | Effet |
+|---|---|
+| `/graphloop <tâche>` | Déroulé complet : graphe, validation si besoin, exécution, clôture |
+| `/graphplan <tâche>` | Construit et montre le graphe, sans rien exécuter |
+| `/graphstatus` | Affiche l'état des nœuds et des boucles (lecture seule) |
+| `/graphresume [consigne]` | Reprend là où le graphe s'est arrêté |
+
+Exemples :
 
 ```
-/graph-engineering ajoute une pagination à l'API des commandes
+/graphloop ajoute une pagination à l'API des commandes
+/graphplan refactorise le module d'authentification et couvre-le de tests
+/graphresume
 ```
 
-ou en langage naturel :
+Sans les commandes, un message qui commence par « graphloop » ou parle de « mode graphe » déclenche aussi la skill.
 
-```
-Mode graphe : refactorise le module d'authentification et couvre-le de tests
-```
-
-La skill propose le graphe, attend votre validation si nécessaire, puis exécute et termine par : l'état final de chaque nœud, ce qui a été livré, les lignes ajoutées à la mémoire, et un prochain pas utile.
+La skill termine par l'état final de chaque nœud, ce qui a été livré, les lignes ajoutées à la mémoire et un prochain pas utile.
 
 ## Git
 

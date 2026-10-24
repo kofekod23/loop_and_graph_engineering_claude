@@ -1,6 +1,6 @@
 ---
 name: graph-engineering
-description: Orchestrer une tâche de développement (tout langage) comme un graphe de contrôle (nœuds, arêtes, portes de validation) avec des sous-agents, où certains nœuds sont des boucles bornées qui tournent jusqu'à un critère vérifiable. À utiliser quand l'utilisateur dit "graph engineering", "mode graphe", "graphe de contrôle", "graphe de boucles", "loops ou graphes", ou veut qu'une tâche complexe (feature, refactor, correction de bug, optimisation) soit découpée en étapes dépendantes, parallélisées et vérifiées, avec des itérations encadrées plutôt qu'une seule boucle libre.
+description: Orchestrer une tâche de développement (tout langage) comme un graphe de contrôle (nœuds, arêtes, portes de validation) avec des sous-agents, où certains nœuds sont des boucles bornées qui tournent jusqu'à un critère vérifiable. À utiliser quand l'utilisateur tape /graphloop, /graphplan, /graphstatus ou /graphresume, ou dit "graphloop", "graph engineering", "mode graphe", "graphe de contrôle", "graphe de boucles", "loops ou graphes", ou veut qu'une tâche complexe (feature, refactor, correction de bug, optimisation) soit découpée en étapes dépendantes, parallélisées et vérifiées, avec des itérations encadrées plutôt qu'une seule boucle libre.
 ---
 
 # Graph engineering (graphe de contrôle)
@@ -15,6 +15,15 @@ Les boucles restent utiles, à l'intérieur du graphe : un nœud peut itérer
 jusqu'à un critère vérifiable, dans un budget fixé. Le graphe décide de l'ordre,
 du parallélisme et des contrôles ; la boucle fait le travail répétitif à
 l'intérieur d'un nœud. C'est un graphe de boucles.
+
+## Commandes
+
+- `/graphloop <tâche>` : déroulé complet (mémoire, graphe, validation, exécution, clôture).
+- `/graphplan <tâche>` : étape 0 seulement. Écrire `.graph/plan.md`, le montrer, ne rien exécuter.
+- `/graphstatus` : lire `.graph/plan.md` et afficher l'état des nœuds, sans rien modifier.
+- `/graphresume [consigne]` : reprendre depuis `.graph/plan.md`, sans refaire les nœuds `ok` ni remettre à zéro le budget d'une boucle.
+
+Un message qui commence par « graphloop » vaut `/graphloop`.
 
 ## Mémoire du projet (perfectionnement continu)
 
