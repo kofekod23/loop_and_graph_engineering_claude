@@ -1,8 +1,8 @@
-# claude-code-graph-engineering
+# claude-code-graph-engineering : graph engineering et boucles d'agents pour Claude Code
 
 🇫🇷 Français | 🇬🇧 [Read in English](README.en.md)
 
-**Skill Claude Code qui transforme une tâche de développement en graphe de contrôle : sous-agents en parallèle, portes de validation, et une mémoire qui s'adapte à chaque projet.**
+**Skill Claude Code qui transforme une tâche de développement en graphe de contrôle : sous-agents en parallèle, portes de validation, boucles bornées qui itèrent jusqu'à un critère vérifiable, et une mémoire qui s'adapte à chaque projet.**
 
 Point fort : **l'auto-adaptation**. À chaque exécution, la skill apprend les commandes, les conventions et les pièges de votre dépôt, puis les réutilise pour construire un meilleur graphe la fois suivante.
 
@@ -28,8 +28,9 @@ Résultat : un processus reproductible, parallélisé, et vérifié par un agent
 2. **Exécute en parallèle** tous les nœuds dont les dépendances sont satisfaites.
 3. **Vérifie par des portes bloquantes** : tests, lint, puis revue indépendante du diff contre la spécification.
 4. **Reprend en cas d'échec** avec le motif, limité à 3 passages avant de vous redonner la main.
-5. **Étend le graphe en cours de route** si une étape révèle du travail imprévu (graphe dynamique).
-6. **Apprend du projet** et enregistre ses enseignements dans `.graph/memoire.md`.
+5. **Étend le graphe en cours de route** si une étape révèle du travail imprévu (graphe dynamique). Au-delà de 2 nœuds ajoutés, ou hors du périmètre prévu, il vous redemande validation.
+6. **Fait tourner en boucle les nœuds mécaniques** (faire passer des tests, corriger le lint, passer sous un seuil de performance), avec une commande de vérification et un budget de tours.
+7. **Apprend du projet** et enregistre ses enseignements dans `.graph/memoire.md`.
 
 Graphe type :
 
@@ -39,6 +40,14 @@ Graphe type :
                            +---- échec ----+          |
                            +------ corrections -------+
 ```
+
+## Graphe de boucles : le graphe gouverne, la boucle itère
+
+Un nœud du graphe peut être une `tâche` (un seul passage) ou une `boucle`. Une boucle tourne jusqu'à ce qu'une commande confirme le résultat, par exemple `pytest -q` sans échec. Elle déclare son objectif, sa commande de vérification, son budget de tours (5 par défaut) et la mesure qui montre le progrès.
+
+Elle s'arrête quand le critère est atteint, quand le budget est épuisé, ou après 2 tours sans progrès. L'agent qui travaille dans la boucle n'a pas le droit de modifier les tests ou les seuils pour réussir : si l'un d'eux paraît faux, il sort et vous le signale. Une boucle qui échoue suit l'arête d'échec du graphe, jamais une relance silencieuse.
+
+Pour une tâche récurrente, le graphe entier peut aussi être relancé à intervalle régulier avec `/loop`.
 
 ## Auto-adaptation : la mémoire de projet
 
@@ -50,9 +59,9 @@ Le fichier `.graph/memoire.md` est lu au démarrage et enrichi à la clôture (3
 | Conventions | Nommage, structure, bibliothèques imposées ou interdites |
 | Pièges | Erreurs déjà rencontrées et leur cause |
 | Graphe éprouvé | Variantes du graphe qui ont bien fonctionné ici |
-| Réglages | Seuils propres au projet (reprises, périmètres de fichiers) |
+| Réglages | Seuils propres au projet (reprises, budget des boucles, périmètres de fichiers) |
 
-La skill corrige les lignes devenues fausses plutôt que d'empiler, garde le fichier sous 80 lignes et promeut en règle une leçon qui revient dans plusieurs tâches. Le fichier est versionné avec votre dépôt : toute l'équipe en profite.
+Elle ne décrit que le projet et ne mentionne jamais l'outil qui l'a rédigée. La skill corrige les lignes devenues fausses plutôt que d'empiler, garde le fichier sous 80 lignes et promeut en règle une leçon qui revient dans plusieurs tâches. Le fichier est versionné avec votre dépôt : toute l'équipe en profite.
 
 ## Compatible avec tous les langages
 
@@ -107,13 +116,14 @@ La skill propose le graphe, attend votre validation si nécessaire, puis exécut
 ## Git
 
 - Les commits utilisent l'identité Git déjà configurée dans votre dépôt.
+- Aucun push sans votre accord explicite.
 - La skill suit les conventions de commit du projet, sinon des messages courts à l'impératif.
 - `.graph/plan.md` est ignoré, `.graph/memoire.md` est versionné.
 
 ## Questions fréquentes
 
 **Quelle différence avec une simple boucle ou `/goal` ?**
-Une boucle retarde les décisions et laisse l'agent improviser à chaque tour. Un graphe les prend à l'avance : l'ordre, le parallélisme et les contrôles sont fixés avant l'exécution.
+Une boucle seule laisse l'agent improviser l'ordre et les contrôles à chaque tour. Ici, l'ordre, le parallélisme et les contrôles sont fixés avant l'exécution, et les boucles ne servent qu'à l'intérieur des nœuds dont la réussite se vérifie par une commande, avec un budget.
 
 **Faut-il un framework (LangGraph, etc.) ?**
 Non. Les sous-agents de Claude Code jouent le rôle des nœuds, et le plan est un simple fichier Markdown.
@@ -129,7 +139,7 @@ Le 18 juillet 2026, Peter Steinberger, créateur d'OpenClaw, a posé cette quest
 >
 > Peter Steinberger ([@steipete](https://x.com/steipete/status/2078277297791189132)), 18 juillet 2026
 
-Elle a lancé un large débat sur les boucles et les graphes pour piloter les agents de code, même si l'expression « graph engineering » circulait déjà avant. Ce dépôt en propose une implémentation légère sous forme de skill.
+Elle a lancé un large débat sur les boucles et les graphes pour piloter les agents de code, même si l'expression « graph engineering » circulait déjà avant. Ce dépôt prend les deux : un graphe qui encadre des boucles bornées, sous forme de skill légère.
 
 ## Licence
 

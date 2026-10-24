@@ -1,8 +1,8 @@
-# claude-code-graph-engineering
+# claude-code-graph-engineering: graph engineering and agent loops for Claude Code
 
 🇫🇷 [Lire en français](README.md) | 🇬🇧 English
 
-**A Claude Code skill that turns a development task into a control graph: parallel subagents, validation gates, and a project memory that adapts itself over time.**
+**A Claude Code skill that turns a development task into a control graph: parallel subagents, validation gates, bounded loops that iterate until a checkable goal is met, and a project memory that adapts itself over time.**
 
 Key strength: **self-adaptation**. On every run, the skill learns your repository's commands, conventions and pitfalls, then reuses them to build a better graph next time.
 
@@ -28,8 +28,9 @@ The result is a repeatable, parallelized process, verified by an agent that did 
 2. **Runs in parallel** every node whose dependencies are satisfied.
 3. **Checks with blocking gates**: tests, lint, then an independent review of the diff against the spec.
 4. **Retries on failure** with the failure reason, capped at 3 passes before handing control back to you.
-5. **Extends the graph on the fly** when a step reveals unexpected work (dynamic graph).
-6. **Learns from the project** and stores its lessons in `.graph/memoire.md`.
+5. **Extends the graph on the fly** when a step reveals unexpected work (dynamic graph). Past 2 added nodes, or outside the planned scope, it asks for your approval again.
+6. **Loops on mechanical nodes** (make tests pass, fix lint, get under a performance threshold), with a check command and a turn budget.
+7. **Learns from the project** and stores its lessons in `.graph/memoire.md`.
 
 Typical graph:
 
@@ -39,6 +40,14 @@ Typical graph:
                            +--- fail ----+          |
                            +------ fixes -----------+
 ```
+
+## Graph of loops: the graph governs, the loop iterates
+
+A graph node is either a `task` (a single pass) or a `loop`. A loop runs until a command confirms the result, for example `pytest -q` with no failures. It declares its goal, its check command, its turn budget (5 by default) and the measure that shows progress.
+
+It stops when the goal is met, when the budget runs out, or after 2 turns without progress. The agent working inside the loop may not edit the tests or thresholds to pass: if one of them looks wrong, it exits and tells you. A failed loop follows the graph's failure edge, never a silent restart.
+
+For a recurring task, the whole graph can also be rerun on a schedule with `/loop`.
 
 ## Self-adaptation: the project memory
 
@@ -50,9 +59,9 @@ The `.graph/memoire.md` file is read at startup and enriched at the end of each 
 | Conventions | Naming, structure, required or forbidden libraries |
 | Pitfalls | Errors already met and their cause |
 | Proven graph | Graph variants that worked well here |
-| Settings | Project-specific thresholds (retries, overlapping file scopes) |
+| Settings | Project-specific thresholds (retries, loop budget, overlapping file scopes) |
 
-The skill fixes lines that became wrong instead of piling up new ones, keeps the file under 80 lines, and promotes a lesson to a rule when it comes back across several tasks. The file is versioned with your repository, so the whole team benefits.
+It only describes the project and never mentions the tool that wrote it. The skill fixes lines that became wrong instead of piling up new ones, keeps the file under 80 lines, and promotes a lesson to a rule when it comes back across several tasks. The file is versioned with your repository, so the whole team benefits.
 
 ## Works with any language
 
@@ -107,13 +116,14 @@ The skill proposes the graph, waits for your approval if needed, then runs it an
 ## Git
 
 - Commits use the Git identity already configured in your repository.
+- No push without your explicit approval.
 - The skill follows the project's commit conventions, otherwise short messages in the imperative mood.
 - `.graph/plan.md` is ignored, `.graph/memoire.md` is versioned.
 
 ## FAQ
 
 **How is this different from a plain loop or `/goal`?**
-A loop postpones decisions and lets the agent improvise at each turn. A graph makes them upfront: order, parallelism and checks are fixed before execution.
+A loop on its own lets the agent improvise order and checks at each turn. Here, order, parallelism and checks are fixed before execution, and loops only run inside nodes whose success a command can check, within a budget.
 
 **Do I need a framework (LangGraph, etc.)?**
 No. Claude Code subagents act as nodes, and the plan is a simple Markdown file.
@@ -129,7 +139,7 @@ On July 18, 2026, Peter Steinberger, creator of OpenClaw, asked this on X:
 >
 > Peter Steinberger ([@steipete](https://x.com/steipete/status/2078277297791189132)), July 18, 2026
 
-The question started a wide debate about loops and graphs for driving coding agents, although the term "graph engineering" was already in use before. This repository offers a lightweight implementation as a skill.
+The question started a wide debate about loops and graphs for driving coding agents, although the term "graph engineering" was already in use before. This repository takes both: a graph that governs bounded loops, packaged as a lightweight skill.
 
 ## License
 
