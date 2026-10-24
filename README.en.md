@@ -123,7 +123,13 @@ The skill is written for Claude Code. The principle (graph plan, gates, project 
 
 ## Going further
 
-On July 18, 2026, Peter Steinberger, creator of OpenClaw, asked on X: "Are we still talking loops or did we shift to graphs yet?" ([the post](https://x.com/steipete/status/2078277297791189132)). The question started a wide debate about loops and graphs for driving coding agents, although the term "graph engineering" was already in use before. This repository offers a lightweight implementation as a skill.
+On July 18, 2026, Peter Steinberger, creator of OpenClaw, asked this on X:
+
+> Are we still talking loops or did we shift to graphs yet?
+>
+> Peter Steinberger ([@steipete](https://x.com/steipete/status/2078277297791189132)), July 18, 2026
+
+The question started a wide debate about loops and graphs for driving coding agents, although the term "graph engineering" was already in use before. This repository offers a lightweight implementation as a skill.
 
 ## License
 

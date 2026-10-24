@@ -123,7 +123,13 @@ La skill est écrite pour Claude Code. Le principe (plan en graphe, portes, mém
 
 ## Pour aller plus loin
 
-Le 18 juillet 2026, Peter Steinberger, créateur d'OpenClaw, a demandé sur X : « Are we still talking loops or did we shift to graphs yet? » ([le message](https://x.com/steipete/status/2078277297791189132)). La question a lancé un large débat sur les boucles et les graphes pour piloter les agents de code, même si l'expression « graph engineering » circulait déjà avant. Ce dépôt en propose une implémentation légère sous forme de skill.
+Le 18 juillet 2026, Peter Steinberger, créateur d'OpenClaw, a posé cette question sur X :
+
+> Are we still talking loops or did we shift to graphs yet?
+>
+> Peter Steinberger ([@steipete](https://x.com/steipete/status/2078277297791189132)), 18 juillet 2026
+
+Elle a lancé un large débat sur les boucles et les graphes pour piloter les agents de code, même si l'expression « graph engineering » circulait déjà avant. Ce dépôt en propose une implémentation légère sous forme de skill.
 
 ## Licence
 
