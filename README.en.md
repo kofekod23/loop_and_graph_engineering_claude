@@ -1,0 +1,130 @@
+# claude-code-graph-engineering
+
+🇫🇷 [Lire en français](README.md) | 🇬🇧 English
+
+**A Claude Code skill that turns a development task into a control graph: parallel subagents, validation gates, and a project memory that adapts itself over time.**
+
+Key strength: **self-adaptation**. On every run, the skill learns your repository's commands, conventions and pitfalls, then reuses them to build a better graph next time.
+
+> Community project, not affiliated with Anthropic. "Claude" and "Claude Code" are trademarks of Anthropic, mentioned here to describe compatibility.
+
+---
+
+## What it is for
+
+With Claude Code, you often prompt the agent step by step, inside a single loop. On a long task (new feature, refactor, bug fix) this is fragile: the context keeps growing, steps get forgotten, and the agent that wrote the code also checks it.
+
+**Graph engineering** replaces that loop with a plan defined upfront:
+
+- each **node** is a unit of work (often a subagent),
+- each **edge** is a dependency or a condition to move on,
+- each **gate** can block what comes next (failing tests, negative review).
+
+The result is a repeatable, parallelized process, verified by an agent that did not write the code.
+
+## What the skill does
+
+1. **Maps before acting**: writes the graph in `.graph/plan.md` (nodes, dependencies, parallelism, gates) and asks for your approval when the task is costly.
+2. **Runs in parallel** every node whose dependencies are satisfied.
+3. **Checks with blocking gates**: tests, lint, then an independent review of the diff against the spec.
+4. **Retries on failure** with the failure reason, capped at 3 passes before handing control back to you.
+5. **Extends the graph on the fly** when a step reveals unexpected work (dynamic graph).
+6. **Learns from the project** and stores its lessons in `.graph/memoire.md`.
+
+Typical graph:
+
+```
+[explore] -> [plan] -> [implement] -> [tests] -> [review] -> [ship]
+                           ^             |          |
+                           +--- fail ----+          |
+                           +------ fixes -----------+
+```
+
+## Self-adaptation: the project memory
+
+The `.graph/memoire.md` file is read at startup and enriched at the end of each run (3 to 5 lines at most, verified lessons only).
+
+| Section | Content |
+|---|---|
+| Commands | How to run tests, lint and build in this project |
+| Conventions | Naming, structure, required or forbidden libraries |
+| Pitfalls | Errors already met and their cause |
+| Proven graph | Graph variants that worked well here |
+| Settings | Project-specific thresholds (retries, overlapping file scopes) |
+
+The skill fixes lines that became wrong instead of piling up new ones, keeps the file under 80 lines, and promotes a lesson to a rule when it comes back across several tasks. The file is versioned with your repository, so the whole team benefits.
+
+## Works with any language
+
+The test node detects your stack and runs the right commands. It reads `.graph/memoire.md` first, otherwise it infers from the files present:
+
+| Detected file | Commands |
+|---|---|
+| `pyproject.toml`, `requirements.txt` | `pytest -q`, `ruff check .`, `mypy` |
+| `package.json` | `test`, `lint`, `build` scripts |
+| `go.mod` | `go test ./...`, `go vet ./...` |
+| `Cargo.toml` | `cargo test`, `cargo clippy` |
+| `pom.xml`, `build.gradle` | `mvn test`, `gradle test` |
+| `Makefile`, CI | commands found there |
+
+If nothing can be detected, the skill asks for the command once, then remembers it.
+
+## Installation
+
+Global install (all your projects):
+
+```bash
+git clone https://github.com/kofekod23/claude-code-graph-engineering.git
+mkdir -p ~/.claude/skills/graph-engineering
+cp claude-code-graph-engineering/graph-engineering/SKILL.md ~/.claude/skills/graph-engineering/
+```
+
+Per-project install (versioned in the repository):
+
+```bash
+mkdir -p .claude/skills/graph-engineering
+cp claude-code-graph-engineering/graph-engineering/SKILL.md .claude/skills/graph-engineering/
+```
+
+Add `.graph/plan.md` to your `.gitignore` (temporary state) and commit `.graph/memoire.md`.
+
+## Usage
+
+In Claude Code:
+
+```
+/graph-engineering add pagination to the orders API
+```
+
+or in plain language:
+
+```
+Graph mode: refactor the authentication module and cover it with tests
+```
+
+The skill proposes the graph, waits for your approval if needed, then runs it and ends with: the final state of each node, what was delivered, the lines added to memory, and one useful next step.
+
+## Git
+
+- Commits use the Git identity already configured in your repository.
+- The skill follows the project's commit conventions, otherwise short messages in the imperative mood.
+- `.graph/plan.md` is ignored, `.graph/memoire.md` is versioned.
+
+## FAQ
+
+**How is this different from a plain loop or `/goal`?**
+A loop postpones decisions and lets the agent improvise at each turn. A graph makes them upfront: order, parallelism and checks are fixed before execution.
+
+**Do I need a framework (LangGraph, etc.)?**
+No. Claude Code subagents act as nodes, and the plan is a simple Markdown file.
+
+**Can I use it outside Claude Code?**
+The skill is written for Claude Code. The principle (graph plan, gates, project memory) carries over to other coding agents, but that is not the goal of this repository.
+
+## Going further
+
+On July 18, 2026, Peter Steinberger, creator of OpenClaw, asked on X: "Are we still talking loops or did we shift to graphs yet?" ([the post](https://x.com/steipete/status/2078277297791189132)). The question started a wide debate about loops and graphs for driving coding agents, although the term "graph engineering" was already in use before. This repository offers a lightweight implementation as a skill.
+
+## License
+
+MIT
