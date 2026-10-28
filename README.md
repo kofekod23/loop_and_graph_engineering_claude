@@ -1,4 +1,4 @@
-# claude-code-graph-engineering : graph engineering et boucles d'agents pour Claude Code
+# Graph and Loop Claude Skill : graph engineering et boucles d'agents pour Claude Code
 
 🇫🇷 Français | 🇬🇧 [Read in English](README.en.md)
 
